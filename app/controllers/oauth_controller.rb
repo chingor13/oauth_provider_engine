@@ -9,28 +9,25 @@ class OauthController < ApplicationController
   before_filter :load_application, :except => [:authorize]
 
   def authorize
-    @request_token = OauthProviderEngine::RequestToken.where(:token => params[:oauth_token]).first
-
     # ensure we have a valid request token
+    @request_token = OauthProviderEngine::RequestToken.where(:token => params[:oauth_token]).first
     return render_403("invalid request token") unless @request_token
 
-    @application = @request_token.application
+    # check to see if the user has already authorized
+    user_id = OauthProviderEngine.user_method.call(self)
+    if @access_token = OauthProviderEngine::AccessToken.where(:user_id => user_id).first
+      @request_token.authorize!(user_id)
+      render_authorize_success(@request_token)
+      return
+    end
 
     if request.post?
       # create an access token for the current user
-      @request_token.authorize!(OauthProviderEngine.user_method.call(self))
-      callback_uri = URI.parse(params.fetch(:oauth_callback, @request_token.application.url))
-      token_params = {
-        :oauth_token => @request_token.token
-      }.to_query
-      if callback_uri.query.present?
-        callback_uri.query = callback_uri.query + "&" + token_params
-      else
-        callback_uri.query = token_params
-      end
-      redirect_to callback_uri.to_s
+      @request_token.authorize!(user_id)
+      render_authorize_success(@request_token)
     else
       # render the allow/disallow form
+      @application = @request_token.application
       render :authorize, :layout => OauthProviderEngine.oauth_layout
     end
   end
@@ -57,8 +54,13 @@ class OauthController < ApplicationController
     # ensure that the OAuth request was properly signed
     return render_401("invalid signature") unless OAuth::Signature.verify(oauth_request, :consumer_secret => @application.secret, :token_secret => @request_token.secret) 
 
-    # upgrade the request token to an access token (deletes the request token)
-    @access_token = @request_token.upgrade!
+    if @access_token =  OauthProviderEngine::AccessToken.where(:user_id => @request_token.user_id).first
+      # user already has a valid access token
+      @request_token.destroy
+    else
+      # upgrade the request token to an access token (deletes the request token)
+      @access_token = @request_token.upgrade!
+    end
 
     render :text => {
       :oauth_token => @access_token.token,
@@ -91,6 +93,19 @@ class OauthController < ApplicationController
 
   def render_403(message)
     render :text => message, :status => 403
+  end
+
+  def render_authorize_success(request_token)
+    callback_uri = URI.parse(params.fetch(:oauth_callback, request_token.application.url))
+    token_params = {
+      :oauth_token => request_token.token
+    }.to_query
+    if callback_uri.query.present?
+      callback_uri.query = callback_uri.query + "&" + token_params
+    else
+      callback_uri.query = token_params
+    end
+    redirect_to callback_uri.to_s
   end
 
 end
