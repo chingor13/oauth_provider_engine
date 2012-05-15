@@ -44,6 +44,7 @@ class OauthController < ApplicationController
     token = params.fetch(:oauth_token, @oauth_params.fetch("oauth_token"))
     @request_token = OauthProviderEngine::RequestToken.authorized.where(:token => token).first
 
+    # upgrade the request token to an access token (deletes the request token)
     @access_token = @request_token.upgrade!
 
     render :text => {
@@ -59,10 +60,13 @@ class OauthController < ApplicationController
   end
 
   def load_application
-    @oauth_params = OAuth::Helper.parse_header(request.headers['HTTP_AUTHORIZATION'])
+    oauth_request = OAuth::RequestProxy.proxy(request)
+    @oauth_params = oauth_request.parameters
     @application = OauthProviderEngine::Application.where(:key => @oauth_params.fetch("oauth_consumer_key")).first
+    raise Oauth::Problem.new("invalid application") unless @application.present?
 
-    raise(ActiveRecord::RecordNotFound) unless @application.present?
+    # ensure that the OAuth request was properly signed
+    raise OAuth::Problem.new("invalid signature") unless OAuth::Signature.verify(oauth_request, :consumer_secret => @application.secret)
   end
 
 end

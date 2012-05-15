@@ -1,3 +1,5 @@
+require 'oauth'
+require 'oauth/request_proxy/rack_request'
 module OauthProviderEngine
 
   class << self
