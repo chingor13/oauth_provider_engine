@@ -32,6 +32,9 @@ class OauthController < ApplicationController
   end
 
   def request_token
+    # ensure that the OAuth request was properly signed
+    return render_401("invalid signature") unless OAuth::Signature.verify(oauth_request, :consumer_secret => @application.secret)
+
     @request_token = @application.request_tokens.build()
     @request_token.save
     render :text => {
@@ -41,8 +44,14 @@ class OauthController < ApplicationController
   end
 
   def access_token
-    token = params.fetch(:oauth_token, @oauth_params.fetch("oauth_token"))
+    token = params.fetch(:oauth_token, oauth_params.fetch("oauth_token"))
     @request_token = OauthProviderEngine::RequestToken.authorized.where(:token => token).first
+
+    # ensure we have a valid request token
+    return render_403("invalid request token") unless @request_token
+
+    # ensure that the OAuth request was properly signed
+    return render_401("invalid signature") unless OAuth::Signature.verify(oauth_request, :consumer_secret => @application.secret, :token_secret => @request_token.secret) 
 
     # upgrade the request token to an access token (deletes the request token)
     @access_token = @request_token.upgrade!
@@ -59,14 +68,25 @@ class OauthController < ApplicationController
     OauthProviderEngine.authenticate_method.call(self)
   end
 
-  def load_application
-    oauth_request = OAuth::RequestProxy.proxy(request)
-    @oauth_params = oauth_request.parameters
-    @application = OauthProviderEngine::Application.where(:key => @oauth_params.fetch("oauth_consumer_key")).first
-    raise Oauth::Problem.new("invalid application") unless @application.present?
+  def oauth_request
+    @oauth_request ||= OAuth::RequestProxy.proxy(request)
+  end
 
-    # ensure that the OAuth request was properly signed
-    raise OAuth::Problem.new("invalid signature") unless OAuth::Signature.verify(oauth_request, :consumer_secret => @application.secret)
+  def oauth_params
+    @oauth_params ||= oauth_request.parameters
+  end
+
+  def load_application
+    @application = OauthProviderEngine::Application.where(:key => oauth_params.fetch("oauth_consumer_key")).first
+    render_403('invalid application') unless @application.present?
+  end
+
+  def render_401(message)
+    render :text => message, :status => 401
+  end
+
+  def render_403(message)
+    render :text => message, :status => 403
   end
 
 end
