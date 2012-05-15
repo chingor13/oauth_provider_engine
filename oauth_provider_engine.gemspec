@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.author = "Jeff Ching"
   s.email = "jeff@chingr.com"
   s.homepage = "http://github.com/chingor13/oauth_provider_engine"
-  s.extra_rdoc_files = ['README.md']
+  s.extra_rdoc_files = ['README.rdoc']
   s.has_rdoc = true
 
   s.files = Dir['lib/**/*.rb'] + Dir['test/**/*.rb']
