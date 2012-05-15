@@ -10,6 +10,10 @@ class OauthController < ApplicationController
 
   def authorize
     @request_token = OauthProviderEngine::RequestToken.where(:token => params[:oauth_token]).first
+
+    # ensure we have a valid request token
+    return render_403("invalid request token") unless @request_token
+
     @application = @request_token.application
 
     if request.post?
