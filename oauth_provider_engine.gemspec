@@ -14,6 +14,6 @@ Gem::Specification.new do |s|
   s.extra_rdoc_files = ['README.rdoc']
   s.has_rdoc = true
 
-  s.files = Dir['lib/**/*.rb'] + Dir['test/**/*.rb']
+  s.files = `git ls-files`.split("\n")
   s.test_files = Dir.glob('test/*_test.rb')
 end
