@@ -27,6 +27,13 @@ module OauthProviderEngine
       return access_token
     end
 
+    def to_query
+      {
+        :oauth_token => token,
+        :oauth_token_secret => secret
+      }.to_query
+    end
+
     protected
 
     def generate_keys

@@ -15,7 +15,7 @@ class OauthController < ApplicationController
 
     # check to see if the user has already authorized
     user_id = OauthProviderEngine.user_method.call(self)
-    if @access_token = OauthProviderEngine::AccessToken.where(:user_id => user_id).first
+    if @access_token = OauthProviderEngine::AccessToken.not_expired.for_user(user_id).first
       @request_token.authorize!(user_id)
       render_authorize_success(@request_token)
       return
@@ -38,10 +38,8 @@ class OauthController < ApplicationController
 
     @request_token = @application.request_tokens.build()
     @request_token.save
-    render :text => {
-      :oauth_token => @request_token.token,
-      :oauth_token_secret => @request_token.secret
-    }.to_query
+
+    render :text => @request_token.to_query
   end
 
   def access_token
@@ -54,7 +52,7 @@ class OauthController < ApplicationController
     # ensure that the OAuth request was properly signed
     return render_401("invalid signature") unless OAuth::Signature.verify(oauth_request, :consumer_secret => @application.secret, :token_secret => @request_token.secret) 
 
-    if @access_token =  OauthProviderEngine::AccessToken.where(:user_id => @request_token.user_id).first
+    if @access_token =  OauthProviderEngine::AccessToken.not_expired.for_user(@request_token.user_id).first
       # user already has a valid access token
       @request_token.destroy
     else
@@ -62,10 +60,7 @@ class OauthController < ApplicationController
       @access_token = @request_token.upgrade!
     end
 
-    render :text => {
-      :oauth_token => @access_token.token,
-      :oauth_token_secret => @access_token.secret
-    }.to_query
+    render :text => @access_token.to_query
   end
 
   protected

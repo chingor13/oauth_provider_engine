@@ -24,6 +24,9 @@ module OauthProviderEngine
     class_attribute :admin_layout
     class_attribute :oauth_layout
 
+    # this setting lets you specify the expiry on an access_token
+    class_attribute :access_token_expiry
+
     def generate_key(length = 32)
       Digest::SHA1.hexdigest("--#{Time.now.to_s}--#{rand(1000)}--")[0,length-1]
     end
