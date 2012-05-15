@@ -1,8 +1,9 @@
 # Provide a simple gemspec so you can easily use your enginex
 # project in your rails apps through git.
+require File.expand_path('../lib/oauth_provider_engine/version', __FILE__)
 Gem::Specification.new do |s|
   s.name = "oauth_provider_engine"
-  s.version = "0.0.1"
+  s.version = OauthProviderEngine::VERSION
   s.summary = 'A Rails Engine that allow the site to act as an OAuth provider'
   s.add_dependency "rails", ">= 3.0.0"
   s.add_dependency "oauth", "~> 0.4.0"
