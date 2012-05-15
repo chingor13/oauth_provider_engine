@@ -1,0 +1,5 @@
+<h1>Do you want to authorize the app "<%= @application.name %>"</h1>
+
+<form method="POST" action="">
+  <input type="submit" value="Allow"/> | <%= link_to "Cancel", @callback_url %>
+</form>

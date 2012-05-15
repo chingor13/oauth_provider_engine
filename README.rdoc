@@ -1,0 +1,64 @@
+= OauthProviderEngine
+
+A Rails Engine that allow the site to act as an OAuth provider
+
+== Installation
+
+In your Gemfile add:
+
+  gem 'oauth_provider_engine'
+
+Install your gems:
+
+  bundle install
+
+That's it!
+
+== Configuration
+
+OauthProviderEngine makes no assumptions about how you manage your
+user authentication.  You can configure OauthProviderEngine by setting
+Proc's that are evaluated at runtime.
+
+For example, in an initializer:
+
+  OauthProviderEngine.configure do |config|
+    # runs as a before_filter to the /oauth/authenticate endpoint to
+    #   ensure the user is logged in before authorizing an app
+    config.authenticate_method = Proc.new{|controller|
+      controller.redirect_to login_path unless controller.logged_in?
+    }
+  
+    # runs as a before_filter to the /oauth/applications resource to
+    #  ensure the user can manage the oauth applications
+    config.admin_authenticate_method = Proc.new{|controller|
+      render :text => '', :status => 401 unless controller.current_user && 
+        controller.current_user.allowed?("manage_oauth")
+    }
+  
+    # returns the current user's id so we know who is allowing access
+    config.user_method = Proc.new{|controller|
+      controller.current_user.id
+    end
+  end
+
+== Data Model
+
+OauthProviderEngine uses ActiveRecord to manage 3 tables:
+
+* applications (OauthProviderEngine::Application)
+* request_tokens (OauthProviderEngine::RequestToken)
+* access_tokens (OauthProviderEngine::AccessToken)
+
+A rails generator is provided for your convenience:
+
+  bundle exec rails generate oauth_provider_engine
+
+You may also generate your migration by hand, if you'd like to take
+advantage of database specific features (like foreign keys for InnoDB
+MySQL tables).
+
+== Contributing
+
+If you'd like to contribute to this project, please fork and send me a pull
+request.

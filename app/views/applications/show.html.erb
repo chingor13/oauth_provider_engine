@@ -1,0 +1,23 @@
+<h1>Application: <%= @application.name %></h1>
+
+<dl>
+  <dt>Id:</dt>
+  <dd><%= @application.id %></dd>
+
+  <dt>Name:</dt>
+  <dd><%= @application.name %></dd>
+
+  <dt>Url:</dt>
+  <dd><%= @application.url %></dd>
+
+  <dt>Key:</dt>
+  <dd><%= @application.key %></dd>
+
+  <dt>Secret</dt>
+  <dd><%= @application.secret %></dd>
+</dl>
+<%= link_to "edit", edit_oauth_provider_engine_application_path(@application) %>
+<br/>
+<%= link_to "delete", oauth_provider_engine_application_path(@application), :method => :delete, :confirm => "Are you sure you want to delete this application?" %>
+<br/>
+<%= link_to "back", oauth_provider_engine_applications_path() %>

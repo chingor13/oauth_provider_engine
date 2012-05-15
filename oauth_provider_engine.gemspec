@@ -1,0 +1,18 @@
+# Provide a simple gemspec so you can easily use your enginex
+# project in your rails apps through git.
+Gem::Specification.new do |s|
+  s.name = "oauth_provider_engine"
+  s.version = "0.0.1"
+  s.summary = 'A Rails Engine that allow the site to act as an OAuth provider'
+  s.add_dependency "rails", ">= 3.0.0"
+  s.add_dependency "oauth", "~> 0.4.0"
+
+  s.author = "Jeff Ching"
+  s.email = "jeff@chingr.com"
+  s.homepage = "http://github.com/chingor13/oauth_provider_engine"
+  s.extra_rdoc_files = ['README.md']
+  s.has_rdoc = true
+
+  s.files = Dir['lib/**/*.rb'] + Dir['test/**/*.rb']
+  s.test_files = Dir.glob('test/*_test.rb')
+end

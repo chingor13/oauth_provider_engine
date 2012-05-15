@@ -1,0 +1,9 @@
+<%= form_for(application) do |form| %>
+  <label for="oauth_provider_engine_application_name">Application Name:</label>
+  <%= form.text_field :name %>
+
+  <label for="oauth_provider_engine_application_url">Application Url:</label>
+  <%= form.text_field :url %>
+
+  <%= form.submit %>
+<% end %>

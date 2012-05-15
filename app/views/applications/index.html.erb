@@ -1,0 +1,24 @@
+<h1>Applications</h1>
+
+<table>
+  <thead>
+    <th>Id</td>
+    <th>Name</td>
+    <th>Url</th>
+    <th>Key</th>
+    <th>Secret</th>
+  </thead>
+  <tbody>
+    <% @applications.each do |application| %>
+      <tr>
+        <td><%= link_to application.id, oauth_provider_engine_application_path(application) %></td>
+        <td><%= application.name %></td>
+        <td><%= application.url %></td>
+        <td><%= application.key %></td>
+        <td><%= application.secret %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<%= link_to "new", new_oauth_provider_engine_application_path() %>
