@@ -21,6 +21,15 @@ module OauthProviderEngine
       params.to_query
     end
 
+    def extend_access
+      generate_expiry
+    end
+
+    def extend_access!
+      extend_access
+      self.save
+    end
+
     protected
 
     def generate_keys
