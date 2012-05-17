@@ -8,16 +8,13 @@ module OauthProviderEngine
     #   your login page. upon successful login, they should be redirected back to the
     #   authenticate action with the same oauth_token param
     attr_accessor :authenticate_method
-    self.authenticate_method = Proc.new{|c| raise "need to override the authenticate method"}
 
     # this method is used to protect the applications controller.  if you do not protect the controller,
     #   anyone can create their own applications (which is a valid scenario).
     attr_accessor :admin_authenticate_method
-    self.admin_authenticate_method = Proc.new{|c| raise "need to override the admin authenticate method"}
 
     # this proc should be used to fetch the uniq user id from the controller
     attr_accessor :user_method
-    self.user_method = Proc.new{|c| raise "need to override the method of retrieving the user id"}
 
     # these settings allow you to specify what layout to use for the applications resource and the 
     #   oauth authorize page
@@ -40,6 +37,11 @@ module OauthProviderEngine
       yield self if block_given?
     end
   end
+
+  # configuration defaults
+  self.authenticate_method = Proc.new{|c| raise "need to override the authenticate method"}
+  self.admin_authenticate_method = Proc.new{|c| raise "need to override the admin authenticate method"}
+  self.user_method = Proc.new{|c| raise "need to override the method of retrieving the user id"}
 end
 
 require 'oauth_provider_engine/version'
